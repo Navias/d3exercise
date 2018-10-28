@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>D3: SVG bar chart with value labels (centered)</title>
+        <script src="https://d3js.org/d3-selection.v1.js"></script>
+		<script type="text/javascript" src="../d3.js"></script>
+<!--
+		<style type="text/css">
+            html{
+                color: rgb (0, 0, 200);
+            }		
+		</style>
+-->
+	</head>
+	<body>
+		<script type="text/javascript">
+            //var d3 = require("d3");
+			//Width and height
+			var w = 500;
+			var h = 250;
+			var barPadding = 1;
+            var count = 0;
+            var pcount = 0;
+			
+			var dataset = [ [5, 23, 75], [10, 14, 34], [13, 67, 23], [19, 10, 65], [21, 42, 29], [25, 25, 25], [22, 90, 30], [18, 57, 17], [15, 25, 35], [13, 26, 39], [11, 17, 85], [12, 36, 24], [15, 60, 45], [20, 41, 11], [18, 77, 33], [17, 85, 55], [16, 23, 44], [18, 35, 23], [23, 55, 15], [25, 45, 100] ];
+
+            
+
+            
+            var p = d3.select("body")
+            .append("p")
+            .text("D3 Exercise 2. Click me to change height!");
+            
+			//Create SVG element
+			var svg = d3.select("body")
+						.append("svg")
+						.attr("width", w)
+						.attr("height", h);
+            
+            // Create xscale
+            var xscale = d3.scaleLinear()
+                        .domain([0, d3.max(dataset, function(d, i) { return i+1; })])
+                        .range([0,w]);
+            
+            // create yscale
+            var yscale = d3.scaleLinear()
+                        .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                        .range([0,h-10]);
+
+            
+			svg.selectAll("rect")
+			   .data(dataset)
+			   .enter()
+			   .append("rect")
+			   .attr("x", function(d, i) {
+			   		return i * (w / dataset.length);
+			   }) 
+			   .attr("y", function(d) {
+			   		return h - (d[0] * 4);
+			   })
+			   .attr("width", function(d){
+                 return (d[1]/100) * (w / dataset.length - barPadding);
+            })
+			   .attr("height", function(d) {
+			   		return d[0] * 4;
+			   })
+			   .attr("fill", function(d) {
+					return "rgb(0, 0,  200)";
+			   })
+               .style("opacity", function(d){
+                   var opac = d[2]/100;
+                   return (opac > 0.25) ? opac : 0.25;
+               })
+            .on("mouseover", function(){
+                d3.select(this).attr("fill", "red");
+            })
+            .on("mouseout", function(d){
+                d3.select(this).attr("fill", "rgb(0,0,200)");
+            })
+            ;
+			svg.selectAll("text")
+			   .data(dataset)
+			   .enter()
+			   .append("text")
+			   .text(function(d) {
+			   		return d[0];
+			   })
+			   .attr("text-anchor", "left")
+			   .attr("x", function(d, i) {
+			   		return i * (w / dataset.length);// + (w / dataset.length - barPadding) / 2;
+			   })
+			   .attr("y", function(d) {
+			   		return h - (d[0] * 4);
+			   })
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", "15px")
+			   .attr("fill", "red");
+            
+            svg.on("click", function(){
+                count  = count % 3;
+                svg.selectAll("rect")
+                .sort(function(a,b){
+                        return d3.ascending(a[count], b[count]);})
+                .transition()
+                .delay(500)
+                .duration(500)
+                .attr("x", function(d, i){
+                    return xscale(i);
+                });
+                svg.selectAll("text")
+                .sort(function(a,b){
+                        return d3.ascending(a[count], b[count]);})
+                .transition()
+                .delay(500)
+                .duration(500)
+                .attr("x", function(d, i){
+                    return xscale(i);
+                }) 
+                .text(function(d){
+                    return d[count]
+                });
+                return count ++;
+            });
+            d3.select("p")
+            .on("click", function(){
+                pcount = pcount % 3;
+                pcount = pcount + 1;
+                svg.selectAll("rect")
+                .transition()
+                .delay(500)
+                .duration(500)
+                .attr("y", function(d){
+                    return h - yscale(d[0]*pcount/3);
+                })
+                .attr("height", function(d){
+                      return yscale(d[0]*pcount/3);
+                });
+                svg.selectAll("text")
+                .transition()
+                .delay(500)
+                .duration(500)
+                .attr("y", function(d){
+                    return h -yscale(d[0]*pcount/3);
+                });
+                pcount ++;
+            });
+		</script>
+	</body>
+</html>
